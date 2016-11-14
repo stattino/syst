@@ -1,10 +1,7 @@
-%% Homework 1. Simulation of a MC
+%% HW 1. Simulation of MC to get reliability of a system
 clc
 clear all
-%% Ex. 2
-% Q - intensity matrix, T - months simulated
-% mu - parameters of exponential distributions, 1/q_ij
-% t initialized at 0, state initialized at 0
+%% Ex. 2 Simulating a MC
 Q = [-1/3 1/3; 2 -2];
 T = 1000;
 mu = [3, 1/2];
@@ -35,7 +32,6 @@ for i = 1:size(statevec,1)
     statevec_2(2*(i-1)+1) = statevec(i);
 end
 
-
 time_2 = zeros(size(timevec,1)*2,1);
 for i = 1:size(timevec,1)
     time_2(2*i) = timevec(i);
@@ -44,8 +40,7 @@ end
 
 plot(time_2(2:end), statevec_2(1:end-1))
 
-
-%% Ex 3. Discrete time 
+%% Ex 3. Discrete time simulation
 % States 0 and 1.
 Q = [-1/3 1/3; 2 -2];
 n = 1/100;
@@ -79,7 +74,7 @@ for t = 1:N
     statevec = [statevec state];
 end
 
-plot(1:N+1, statevec)
+%plot(1:N+1, statevec)
 
 % sw-matrix contains in (1,1) how many times it stays in state 0, (1,2) how
 % many times it leaves it. Simliarily (2,1) how many times stays in state
@@ -89,43 +84,103 @@ MTTF = sw(1,2) / sw(1,1) * n
 MTTR = sw(2,2) / sw(2,1) * n
 %MTBF = MTTF+ MTTR
 
-%% Ex 4 version 2.0
-% Definierar två states: 0 och 1, för trasig och helt
+%% Ex 4 Components in series
+% % Two states defined: 0 and 1, for broken resp. working
+% 
+% mu = [3, 1/2];
+% t = 0; state = 0;
+% timevec = [t]; statevec = [state];
+% while (t < T)
+%     switch statevec(end)
+%         case 0
+%             components = exprnd(3, 3, 1); %  simulates 3 components
+%             t_inc = min(components) ;
+%             state = state + 1;
+%             t = t+ t_inc;
+%         case 1
+%             repair = exprnd(1/2);
+%             t = t + repair;
+%             state = state - 1;
+%     end
+%     timevec = [timevec; t];
+%     statevec = [statevec; state];
+% end
+% 
+% timedif = timevec(2:end) - timevec(1:end-1);
+% 
+% time_working = timedif(1:2:end);
+% time_broken = timedif(2:2:end);
+% 
+% MTTR = mean(time_broken)
+% MTTF = mean(time_working)
+% %MTBF = MTTF+ MTTR
+%% Series, different interpretation
+% States 0 to 3, where 0 is working, and 1-3 are broken
 
-mu = [3, 1/2];
-t = 0; state = 0;
-timevec = [t]; statevec = [state];
+T = 50000; t = 0; state = 0;
+
+timevec = [t];
+statevec = [state];
+no_failures = 0;
 while (t < T)
-    switch statevec(end)
+    switch (statevec(end))
         case 0
-            components = exprnd(3, 3, 1); %  simulates 3 components
-            t_inc = min(components) ;
+            up = exprnd(3+3+3);
+            t = t + up;
             state = state + 1;
-            t = t+ t_inc;
         case 1
-            repair = exprnd(1/2);
-            t = t + repair;
+            up = exprnd(3+3);
+            down = exprnd(1/2);
+            if up < down
+                state = state + 1;
+                t = t + up;
+            else
+                state = state - 1;
+                t = t + down;
+            end
+        case 2 
+           up = exprnd(3);
+            down = exprnd(1/2+1/2);
+            if up < down
+                state = state + 1;
+                t = t + up;
+            else
+                state = state - 1;
+                t = t + down;
+            end
+        case 3
+            down = exprnd(1/2+1/2+1/2);
+            t = t + down;
             state = state - 1;
     end
-    timevec = [timevec; t];
-    statevec = [statevec; state];
+
+    statevec = [statevec state];
+    timevec = [timevec t];
 end
+
+statevec_broken = (statevec~=0); 
+statevec_working = (statevec==0);
 
 timedif = timevec(2:end) - timevec(1:end-1);
 
-time_working = timedif(1:2:end);
-time_broken = timedif(2:2:end);
+timedif_broken = statevec_broken(2:end).*timedif;
+timedif_working = statevec_working(2:end).*timedif;
 
-MTTR = mean(time_broken)
-MTTF = mean(time_working)
+total_time_broken = sum(timedif_broken);
+
+number_time_broken = sum(timedif_broken~=0); 
+number_time_working = sum(timedif_working==0); 
+
+
+MTTR = total_time_broken/(number_time_broken)
+
+total_time_working = sum(timedif_working);
+MTTF = total_time_working/(number_time_working)
 %MTBF = MTTF+ MTTR
 
-%% Plots series
-
-%% Ex. 5 n=2 components in parallel
-% Two components in parallel. 
-% 3 states -> state 0: all working, state 1: one broken, state 2: two
-% broken. Then this simplifies as state (1 U 2): working, state (3): broken.
+%% Ex. 5 n=2 components in parallel. 
+% 3 states -> state 0: all working, state 1: one broken, state 2: two broken. 
+% Then this simplifies as state (1 U 2): working, state (3): broken.
 Q = [   -1/3, 1/3, 0, 0; ...
         2, -7/3, 1/3, 0; ...
         0, 0, 2, -2     ];
@@ -160,9 +215,6 @@ while (t < T)
     statevec = [statevec state];
     timevec = [timevec t];
 end
-% Broken when in state 2, 
-
-%
 
 statevec_broken = (statevec==2); 
 statevec_working = (statevec~=2);
@@ -183,5 +235,3 @@ MTTF = total_time_working/(number_time_broken+1)
 plot(timevec, statevec_broken)
 figure()
 plot(timevec, statevec)
-
-
