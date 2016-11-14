@@ -116,12 +116,15 @@ MTTR = sw(2,2) / sw(2,1) * n
 % %MTBF = MTTF+ MTTR
 %% Series, different interpretation
 % States 0 to 3, where 0 is working, and 1-3 are broken
-
+Q = [   -1/9, 1/9, 0, 0; ...
+        2, -13/6, 1/6, 0 ; ...
+        0, 2, -7/3, 1/3 ; ...
+        0, 0, 6, -6];
+    
 T = 50000; t = 0; state = 0;
 
 timevec = [t];
 statevec = [state];
-no_failures = 0;
 while (t < T)
     switch (statevec(end))
         case 0
@@ -181,19 +184,18 @@ MTTF = total_time_working/(number_time_working)
 %% Ex. 5 n=2 components in parallel. 
 % 3 states -> state 0: all working, state 1: one broken, state 2: two broken. 
 % Then this simplifies as state (1 U 2): working, state (3): broken.
-Q = [   -1/3, 1/3, 0, 0; ...
-        2, -7/3, 1/3, 0; ...
-        0, 0, 2, -2     ];
+Q = [   -1/3, 1/3, 0; ...
+        2, -7/3, 1/3 ; ...
+        0, 2, -2     ];
 
 T = 10000; t = 0; state = 0;
 
 timevec = [t];
 statevec = [state];
-no_failures = 0;
 while (t < T)
     switch (statevec(end))
         case 0
-            up = exprnd(3);
+            up = exprnd(3 + 3);
             t = t + up;
             state = state + 1;
         case 1
@@ -207,7 +209,7 @@ while (t < T)
                 t = t + down;
             end
         case 2 
-            down = exprnd(1/2);
+            down = exprnd(1/2 + 1/2);
             t = t + down;
             state = state - 1;
     end
