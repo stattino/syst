@@ -128,11 +128,11 @@ statevec = [state];
 while (t < T)
     switch (statevec(end))
         case 0
-            up = exprnd(3+3+3);
+            up = exprnd(1/ (1/3+1/3+1/3));
             t = t + up;
             state = state + 1;
         case 1
-            up = exprnd(3+3);
+            up = exprnd(1/ (1/3+1/3));
             down = exprnd(1/2);
             if up < down
                 state = state + 1;
@@ -143,7 +143,7 @@ while (t < T)
             end
         case 2 
            up = exprnd(3);
-            down = exprnd(1/2+1/2);
+            down = exprnd(1/ (2+2) );
             if up < down
                 state = state + 1;
                 t = t + up;
@@ -152,7 +152,7 @@ while (t < T)
                 t = t + down;
             end
         case 3
-            down = exprnd(1/2+1/2+1/2);
+            down = exprnd(1/(2+2+2));
             t = t + down;
             state = state - 1;
     end
@@ -195,7 +195,7 @@ statevec = [state];
 while (t < T)
     switch (statevec(end))
         case 0
-            up = exprnd(3 + 3);
+            up = exprnd(1/ (1/3 + 1/3));
             t = t + up;
             state = state + 1;
         case 1
@@ -209,7 +209,7 @@ while (t < T)
                 t = t + down;
             end
         case 2 
-            down = exprnd(1/2 + 1/2);
+            down = exprnd(1/ (2 + 2));
             t = t + down;
             state = state - 1;
     end
