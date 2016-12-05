@@ -28,7 +28,7 @@ while (C <= C_max)
     k = k+1;
     [val, ind] = max(max(A));
     
-    A( s(ind) +1 , ind) = -1;
+    A( s(k,ind) + 1 , ind) = -1;
     
     s(k+1,:) = s(k,:);
     s(k+1,ind) = s(k,ind) +1;
@@ -39,3 +39,5 @@ while (C <= C_max)
     EBO(k+1) = EBO(k) - R_ind;
     
 end
+
+plot(1:k+1, EBO)
