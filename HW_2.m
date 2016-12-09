@@ -48,13 +48,14 @@ plot(1:k+1, C)
 
 %% Task 2
 % Dynamic programming
+% KNAPSACK PROBLEM W INFINITE ITEMS? 
 % Define problem: stages k, states s_k, and decision x_k, feasibility set
 % F_k(s_k), next state fctn S_k+1 = h_k(s_k, x_k)
 
 % The stage k is the k:th bought spare part
 
 % The state s_k is a vector with entries for how many spare parts of each
-% component is bought at the k:th bought spare part.
+% component is bought at the k:th bought spare part. 
 
 % x_k is a bit vector where all entries are zero except for one which is
 % the part we decide to buy.
@@ -63,32 +64,46 @@ plot(1:k+1, C)
 % than C_max
 
 % The function s_k+1 = h_k(s_k, x_k) = s_k + x_k
-N = 0; C = 0;
-EBO = [lambda*T'];
-s = zeros(1,7);
-k = 0;
-f_n = -EBO;
-while (C <= C_max)
-    k = k+1;
+lambda = 1/1000 * [55 43 36 70 29 45 111]; % Intensity of arrivals
+c = [5 18 14 17 16 24 70]; % Cost of spare parts
+T = [8 4 14 3 14 9 25]; % Repair times
+C_max = 500;
+
+% EBO and s start at 0 money spent
+EBO = zeros(1,501);
+EBO(1) = [lambda*T'];
+s = zeros(501,7);
+
+for C = 1:500
     
-    f_s_z = zeros(1,7);
+    f_s_z = Inf(1,7);
     x = zeros(1,7);
+    spent = s(C,:)*c'; % Money spent
     
     for z = 1:7
         
-        if (C + c(z) <= C_max) % Check feasibility
-            G_n = -poisscdf( s(k, z) , lambda(z)*T(z), 'upper') / c(z);
-            f_s_z(z) = G_n + f_n ;
+        if (spent+c(z) <= C_max) % Check feasibility
+            if (C-c(z)>=0) % Check feasibility
+                G_n = -poisscdf( s(C-c(z)+1, z)+1 , lambda(z)*T(z), 'upper');
+                f_s_z(z) = G_n + EBO(C-c(z)+1);
+            end
         end
         
     end
     
-    [val, ind] = min(f_s_z);
-    f_n = f_n + val;
-    x(ind) = 1;
-    s(k+1, :) = s(k, :) + x;
+    [val, ind] = min(f_s_z);    
     
-    C = C + c(ind);
-    
+    if(val<EBO(C))
+        EBO(C+1) = val;
+        x(ind) = 1;
+        s(C+1, :) = s(C-c(ind)+1, :) + x;
+    else
+        EBO(C+1) = EBO(C);
+        s(C+1, :) = s(C, :);
+    end
+              
 end
 
+
+
+ 
