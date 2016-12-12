@@ -5,22 +5,18 @@ lambda = 1/1000 * [55 43 36 70 29 45 111]; % Intensity of arrivals
 c = [5 18 14 17 16 24 70]; % Cost of spare parts
 T = [8 4 14 3 14 9 25]; % Repair times
 C_max = 500;
-
-% Marginal allocation
-
-% R_j(s_j) = cdf(pd, s_j +1 , 'upper')
 m = 10;
 n = 7;
 A = [];
+
 for i = 0:m
     for j = 1:n
-        A(i+1,j) = poisscdf( i+1 , lambda(j)*T(j), 'upper') / c(j);
+        A(i+1,j) = poisscdf( i , lambda(j)*T(j), 'upper') / c(j); %R_j(0)/c_j
     end
 end
 
 s = zeros(m,7);
-k = 0;
-C = 0;
+k = 0; C = 0;
 
 EBO = [lambda*T'];
 C = [0];
@@ -33,29 +29,32 @@ while (C <= C_max)
     s(k+1,:) = s(k,:);
     s(k+1,ind) = s(k,ind) +1;
     
-    
-    R_ind = poisscdf( s(k, ind) , lambda(ind)*T(ind), 'upper') / c(ind);
-    
+    R_ind = poisscdf( s(k, ind) , lambda(ind)*T(ind), 'upper');
     C(k+1) = C(k) + c(ind);
-    
     EBO(k+1) = EBO(k) - R_ind;
-    
 end
+%%
+plot(C, EBO, 'rd')
+hold on
+plot([500, 500], [0 5], 'r--')
+plot([C], EBO)
+legend('Efficient points', 'Max-budget')
+xlabel('Cost')
+ylabel('EBO')
+title('Efficient Curve for EBO and Cost')
 
-plot(1:k+1, EBO)
-figure()
-plot(1:k+1, C)
-
+set(gca,'FontSize',18,'Fontname','Helvetica','Box','off','Tickdir','out','Ticklength',[.02 .02],'xcolor',0.5*[1 1 1],'ycolor',0.5*[1 1 1]);
+grid on
 %% Task 2
 % Dynamic programming
-% KNAPSACK PROBLEM W INFINITE ITEMS? 
+% KNAPSACK PROBLEM W INFINITE ITEMS?
 % Define problem: stages k, states s_k, and decision x_k, feasibility set
 % F_k(s_k), next state fctn S_k+1 = h_k(s_k, x_k)
 
 % The stage k is the k:th bought spare part
 
 % The state s_k is a vector with entries for how many spare parts of each
-% component is bought at the k:th bought spare part. 
+% component is bought at the k:th bought spare part.
 
 % x_k is a bit vector where all entries are zero except for one which is
 % the part we decide to buy.
@@ -91,7 +90,7 @@ for C = 1:500
         
     end
     
-    [val, ind] = min(f_s_z);    
+    [val, ind] = min(f_s_z);
     
     if(val<EBO(C))
         EBO(C+1) = val;
@@ -101,9 +100,9 @@ for C = 1:500
         EBO(C+1) = EBO(C);
         s(C+1, :) = s(C, :);
     end
-              
+    
 end
 
 
 
- 
+
